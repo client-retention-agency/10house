@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Silent Churn Calculator — 10 HOUSE</title>
+    <title>Silent Churn Calculator | 10 HOUSE</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Figtree:wght@400;500;600&family=Satisfy&display=swap" rel="stylesheet">
@@ -440,12 +440,27 @@
             annualImpact: document.getElementById('annualImpact')
         };
 
+        // Allowed ranges [min, max]. Typed values outside these are corrected.
+        const LIMITS = {
+            newClients: [1, 1000],
+            servicePrice: [10, 5000],
+            churnRate: [0, 100],      // this is the REBOOKING rate (%)
+            visitsPerYear: [1, 52]
+        };
+
+        function getVal(key) {
+            const [min, max] = LIMITS[key];
+            const v = parseFloat(inputs[key].value);
+            if (isNaN(v)) return min;
+            return Math.min(max, Math.max(min, v));
+        }
+
         function calculate() {
-            const newClients = parseInt(inputs.newClients.value) || 0;
-            const servicePrice = parseFloat(inputs.servicePrice.value) || 0;
+            const newClients = Math.floor(getVal('newClients'));
+            const servicePrice = getVal('servicePrice');
             // The slider value is the REBOOKING rate (% of new clients who come back)
-            const rebookingPct = Math.min(100, Math.max(0, parseFloat(inputs.churnRate.value) || 0));
-            const visitsPerYear = parseFloat(inputs.visitsPerYear.value) || 0;
+            const rebookingPct = getVal('churnRate');
+            const visitsPerYear = getVal('visitsPerYear');
 
             const rebookingRate = rebookingPct / 100;
             const clientsLost = newClients * (1 - rebookingRate);
@@ -484,6 +499,19 @@
             input.addEventListener('input', calculate);
         });
 
+        // Fix out-of-range values when the user leaves a field
+        ['newClients', 'servicePrice', 'visitsPerYear'].forEach(key => {
+            inputs[key].addEventListener('change', () => {
+                inputs[key].value = getVal(key);
+                calculate();
+            });
+        });
+        inputs.churnRateNumber.addEventListener('change', () => {
+            // The slider auto-limits to 0-100, so mirror it back into the number box
+            inputs.churnRateNumber.value = inputs.churnRate.value;
+            calculate();
+        });
+
         // Initial calculation
         calculate();
 
@@ -492,10 +520,10 @@
 
         function handleCTA() {
             const params = new URLSearchParams({
-                newClients: inputs.newClients.value,
-                servicePrice: inputs.servicePrice.value,
-                churnRate: inputs.churnRate.value,
-                visitsPerYear: inputs.visitsPerYear.value
+                newClients: Math.floor(getVal('newClients')),
+                servicePrice: getVal('servicePrice'),
+                churnRate: getVal('churnRate'),
+                visitsPerYear: getVal('visitsPerYear')
             });
             window.location.href = `${AUDIT_URL}?${params.toString()}`;
         }
