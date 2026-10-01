@@ -487,6 +487,9 @@
         // Initial calculation
         calculate();
 
+        // Change this one line later if the audit form moves (e.g. audit.10house.us)
+        const AUDIT_URL = 'https://tally.so/r/gDK7AP';
+
         function handleCTA() {
             const params = new URLSearchParams({
                 newClients: inputs.newClients.value,
@@ -494,7 +497,7 @@
                 churnRate: inputs.churnRate.value,
                 visitsPerYear: inputs.visitsPerYear.value
             });
-            window.location.href = `https://10house.us/audit?${params.toString()}`;
+            window.location.href = `${AUDIT_URL}?${params.toString()}`;
         }
     </script>
 </body>
